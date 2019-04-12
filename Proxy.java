@@ -48,11 +48,10 @@ public class Proxy implements Runnable{
 		myProxy.listen();	
 	}
 
-	LRUCache<Object, Object> lru;
 	private ServerSocket serverSocket;
 
 	/**
-	 * Semaphore for Proxy and Consolee Management System.
+	 * Semaphore for Proxy and Console Management System.
 	 */
 	private volatile boolean running = true;
 
@@ -62,7 +61,8 @@ public class Proxy implements Runnable{
 	 * Key: URL of page/image requested.
 	 * Value: File in storage associated with this key.
 	 */
-	//static HashMap<String, File> cache;
+	protected static int size; 
+
 
 
 	/**
@@ -79,13 +79,12 @@ public class Proxy implements Runnable{
 	 */
 	public Proxy(int port, int maxSize) {
 
-
+		size = maxSize;
 		// Create array list to hold servicing threads
 		servicingThreads = new ArrayList<>();
 
 		// Start dynamic manager on a separate thread.
 		new Thread(this).start();	// Starts overriden run() method at bottom
-		lru = new LRUCache<Object, Object>(maxSize);
 		
 
 		try {
@@ -95,7 +94,7 @@ public class Proxy implements Runnable{
 			// Set the timeout
 			//serverSocket.setSoTimeout(100000);	// debug
 			System.out.println("Waiting for client on port " + serverSocket.getLocalPort() + "..");
-			System.out.println("using cache maximum size "+maxSize);
+			//System.out.println("using cache maximum size "+maxSize);
 			running = true;
 		} 
 
@@ -180,35 +179,11 @@ public class Proxy implements Runnable{
 		}
 
 	}
-		/**
 		
-
-
-		/**
-		 * Adds a new page to the cache
-		 * @param urlString URL of webpage to cache 
-		 * @param fileToCache File Object pointing to File put in cache
-		 */
 	
-		/**
-		 * Check if a URL is blocked by the proxy
-		 * @param url URL to check
-		 * @return true if URL is blocked, false otherwise
-		 
-		public static boolean isBlocked (String url){
-			if(blockedSites.get(url) != null){
-				return true;
-			} else {
-				return false;
-			}
-		}
-		*/
-		
-
 
 		/**
 		 * Creates a management interface which can dynamically update the proxy configurations
-		 * 		blocked : Lists currently blocked sites
 		 *  	cached	: Lists currently cached sites
 		 *  	close	: Closes the proxy server
 		 *  	*		: Adds * to the list of blocked sites
@@ -221,23 +196,9 @@ public class Proxy implements Runnable{
 			while(running){
 				System.out.println("Enter \"cached\" to see cached sites, or \"close\" to close server.");
 				command = scanner.nextLine();
-				/**if(command.toLowerCase().equals("blocked")){
-					System.out.println("\nCurrently Blocked Sites");
-					for(String key : blockedSites.keySet()){
-						System.out.println(key);
-					}
-					System.out.println();
-				} 
-
-				else */
+				
 				if(command.toLowerCase().equals("cached")){
-					System.out.println("\nCurrently Cached Sites");
-					if(lru.toString()==null) {
-						System.out.println("Cache vazia");
-					}else {
-						lru.snapshot();
-					}
-					System.out.println();
+
 				}
 
 
@@ -246,11 +207,7 @@ public class Proxy implements Runnable{
 					closeServer();
 				}
 
-				/**
-				else {
-					blockedSites.put(command, command);
-					System.out.println("\n" + command + " blocked successfully \n");
-				}*/
+				
 			}
 			scanner.close();
 		} 

@@ -21,16 +21,24 @@ import java.util.Objects;
 
 import javax.imageio.ImageIO;
 
-public class RequestHandler implements Runnable {
+public class RequestHandler implements Runnable  {
 
 	/**
 	 * Socket connected to client passed by Proxy server
 	 */
 	Socket clientSocket;
+	
+	/**
+	 * Tamanho maximo
+	 */
+	
+	int s = Proxy.size;
+	
 	/**
 	 * Cache com politica LRU
 	 */
-	LRUCache<String, Data> lru;
+	//LRUCache<String, Data> lru;
+	LRUCache<String, Data> lru = new LRUCache<String, Data>(s);
 	/**
 	 * Data onde armazena as infomações do arquivo
 	 */
@@ -123,10 +131,10 @@ public class RequestHandler implements Runnable {
 
 		else{
 			// Check if we have a cached copy
-			/*if(Objects.nonNull(lru.get(urlString))){
+			if(Objects.nonNull(lru.get(urlString))){
 				System.out.println("Cached Copy found for : " + urlString + "\n");
 				sendCachedPageToClient(urlString);
-			} else*/
+			} else
 			
 				System.out.println("HTTP GET for : " + urlString + "\n");
 				sendNonCachedToClient(urlString);
@@ -153,8 +161,7 @@ public class RequestHandler implements Runnable {
 			String response;
 			lru.get(urlString);
 			
-			switch(data.getTipo()){
-			case 0:
+			if(data.getTipo()==0){
 				FileOutputStream fos = new FileOutputStream(file);
 				fos.write(data.getBite());
 				// Read in image from storage
@@ -178,7 +185,7 @@ public class RequestHandler implements Runnable {
 			
 			
 			// Standard text based file requested
-			default:
+			}else {
 				FileOutputStream fos2 = new FileOutputStream(file);
 				fos2.write(data.getBite());
 				BufferedReader cachedFileBufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
@@ -228,6 +235,7 @@ public class RequestHandler implements Runnable {
 			String fileExtension;
 			int tipo=-1;
 			byte[] bite=null;
+			int rem = 0;
 			LRUCache<String, Data> lru= new LRUCache<String, Data>();
 			// Get the type of file
 			fileExtension = urlString.substring(fileExtensionIndex, urlString.length());
@@ -235,18 +243,33 @@ public class RequestHandler implements Runnable {
 			// Get the initial file name
 			String fileName = urlString.substring(0,fileExtensionIndex);
 			
-
+			if(urlString.substring(0,11).equals("http://www.")){
+				rem = 11;
+			}else if(urlString.substring(0,4).equals("www.")){
+				rem = 4;
+			}else if(urlString.substring(0,7).equals("http://")){
+				rem = 7;
+			}else if(urlString.substring(0,12).equals("http://www4.")){
+				rem = 12;
+			}else if(urlString.substring(0,5).equals("www4.")){
+				rem = 5;
+			}
+			
 			// Trim off http://www. as no need for it in file name
-			fileName = fileName.substring(fileName.indexOf('/')+1);
+			fileName = fileName.substring(rem);
+			
+			
 			
 			// Remove any illegal characters from file name
-			fileName = fileName.replace("/", "'");
-			fileName = fileName.replace('.','_');
+			while((fileName.contains(".")) || (fileName.contains("/") )){
+				fileName = fileName.replace("/", "'");
+				fileName = fileName.replace('.',';');
+			}
 			
 			// Trailing / result in index.html of that directory being fetched
 			if(fileExtension.contains("/")){
 				fileExtension = fileExtension.replace("/", "'");
-				fileExtension = fileExtension.replace('.','_');
+				fileExtension = fileExtension.replace('.',';');
 				fileExtension = ".html";
 			}
 		
@@ -276,6 +299,10 @@ public class RequestHandler implements Runnable {
 				System.out.println("Couldn't cache: " + fileName);
 				caching = false;
 				e.printStackTrace();
+			}catch (NullPointerException e){
+				System.out.println("File is null: " + fileName);
+				caching = false;
+				e.printStackTrace();
 			}
 			
 
@@ -291,7 +318,12 @@ public class RequestHandler implements Runnable {
 				if(image != null) {
 					// Cache the image to disk
 					ImageIO.write(image, fileExtension.substring(1), file);
-
+					// Ensure data written and add to our cached hash maps
+					fileBW.flush();
+					bite = Data.readFileToByteArray(file);
+		            Data data = new	Data(tipo,bite,fileExtension);
+					lru.put(urlString, data);
+					
 					// Send response code to client
 					String line = "HTTP/1.0 200 OK\n" +
 							"Proxy-agent: ProxyServer/1.0\n" +
@@ -376,6 +408,7 @@ public class RequestHandler implements Runnable {
 			if(proxyToClientBw != null){
 				proxyToClientBw.close();
 			}
+			System.out.println("Cache é "+lru.snapshot());
 		} 
 
 		catch (Exception e){
@@ -545,24 +578,7 @@ public class RequestHandler implements Runnable {
 		}
 	}
 
-	
-	/**
-	 * This method is called when user requests a page that is blocked by the proxy.
-	 * Sends an access forbidden message back to the client
-	 */
-	private void blockedSiteRequested(){
-		try {
-			BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
-			String line = "HTTP/1.0 403 Access Forbidden \n" +
-					"User-Agent: ProxyServer/1.0\n" +
-					"\r\n";
-			bufferedWriter.write(line);
-			bufferedWriter.flush();
-		} catch (IOException e) {
-			System.out.println("Error writing to client when requested a blocked site");
-			e.printStackTrace();
-		}
-	}
+
 }
 
 
