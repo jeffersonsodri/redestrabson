@@ -154,7 +154,7 @@ public class LRUCache<K, V> implements Cache<K, V> {
             sb.append(entry.getKey())
                     .append('=')
                     .append(entry.getValue())
-                    .append(",");
+                    .append("\n");
         }
         sb.append("maxMemory=")
                 .append(maxMemorySize)
