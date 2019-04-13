@@ -18,11 +18,19 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
 public class RequestHandler implements Runnable  {
 
+	/**
+	 * Logger, usado para exceptions
+	 */
+	
+	private static final Logger LOGGER = Logger.getLogger( RequestHandler.class.getName() );
+	
 	/**
 	 * Socket connected to client passed by Proxy server
 	 */
@@ -32,12 +40,12 @@ public class RequestHandler implements Runnable  {
 	 * Tamanho maximo
 	 */
 	
-	int s = Proxy.size;
+	static int s = Proxy.size;
 	
 	/**
 	 * Cache com politica LRU
 	 */
-	LRUCache<String, Data> lru = new LRUCache<>(s);
+	static LRUCache<String, Data> lru = new LRUCache<>(s);
 	
 	/**
 	 * Data onde armazena as infomações do arquivo
@@ -73,7 +81,7 @@ public class RequestHandler implements Runnable  {
 			proxyToClientBw = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
 		} 
 		catch (IOException e) {
-			e.printStackTrace();
+			LOGGER.log( Level.SEVERE, e.toString(), e );
 		}
 	}
 
@@ -135,11 +143,11 @@ public class RequestHandler implements Runnable  {
 			if(Objects.nonNull(lru.get(urlString))){
 				System.out.println("Cached Copy found for : " + urlString + "\n");
 				sendCachedPageToClient(urlString);
-			} else
+			} else {
 			
 				System.out.println("HTTP GET for : " + urlString + "\n");
 				sendNonCachedToClient(urlString);
-			
+			}
 		}
 		
 		
@@ -162,15 +170,16 @@ public class RequestHandler implements Runnable  {
 			// Response that will be sent to the server
 			File file=null;
 			String response;
-			lru.get(urlString);
+			//lru.get(urlString);
 			
 			/**
 			 * Print para ver o que tem na chache
 			 */
-			System.out.println("URL Dentro da CHACHE "+  urlString.toUpperCase() );
+			//System.out.println("URL Dentro da CHACHE "+  urlString.toUpperCase() );
 			
-			System.out.println("Se for igual a de cima está funccionando: \n"+  lru.toString() + "AEW");
-			System.out.println("-*-*-*-**-*-*-*-*-*-*-*-*-**-*-*-*-*-*-*-*-*");
+			System.out.println("");
+			lru.get(urlString);
+			data.getTipo();
 
 			if(data.getTipo()==0){
 				FileOutputStream fos = new FileOutputStream(file);
@@ -193,7 +202,8 @@ public class RequestHandler implements Runnable  {
 					proxyToClientBw.flush();
 					ImageIO.write(image, data.getExten(), clientSocket.getOutputStream());
 				}
-			
+				
+				fos.close();
 			
 			// Standard text based file requested
 			}else {
@@ -216,7 +226,8 @@ public class RequestHandler implements Runnable  {
 				// Close resources
 				if(cachedFileBufferedReader != null){
 					cachedFileBufferedReader.close();
-				}	
+				}
+				fos2.close();
 			}
 
 
@@ -227,7 +238,7 @@ public class RequestHandler implements Runnable  {
 
 		} catch (IOException e) {
 			System.out.println("Error Sending Cached file to client");
-			e.printStackTrace();
+			LOGGER.log( Level.SEVERE, e.toString(), e );
 		}
 		
 		
@@ -251,6 +262,12 @@ public class RequestHandler implements Runnable  {
 			int rem = 0;
 			// Get the type of file
 			fileExtension = urlString.substring(fileExtensionIndex, urlString.length());
+			
+			if(fileExtension.equals(".br")){
+				fileExtension = ".html";
+				fileExtensionIndex = urlString.length();
+			}
+			
 			
 			// Get the initial file name
 			String fileName = urlString.substring(0,fileExtensionIndex);
@@ -318,11 +335,11 @@ public class RequestHandler implements Runnable  {
 			catch (IOException e){
 				System.out.println("Couldn't cache: " + fileName);
 				caching = false;
-				e.printStackTrace();
+				LOGGER.log( Level.SEVERE, e.toString(), e );
 			}catch (NullPointerException e){
 				System.out.println("File is null: " + fileName);
 				caching = false;
-				e.printStackTrace();
+				LOGGER.log( Level.SEVERE, e.toString(), e );
 			}
 			
 
@@ -418,7 +435,7 @@ public class RequestHandler implements Runnable  {
 				bite = Data.readFileToByteArray(file);
 	            Data data = new	Data(tipo,bite,fileExtension);
 				lru.put(urlString, data);
-				System.out.println("Cache é "+Proxy.lru.toString());
+				//System.out.println("Cache é "+Proxy.lru.toString());
 			}
 
 			// Close down resources
@@ -432,7 +449,7 @@ public class RequestHandler implements Runnable  {
 		} 
 
 		catch (Exception e){
-			e.printStackTrace();
+			LOGGER.log( Level.SEVERE, e.toString(), e );
 		}
 	}
 
@@ -506,10 +523,10 @@ public class RequestHandler implements Runnable  {
 				} while (read >= 0);
 			}
 			catch (SocketTimeoutException e) {
-				
+				LOGGER.log( Level.SEVERE, e.toString(), e );
 			}
 			catch (IOException e) {
-				e.printStackTrace();
+				LOGGER.log( Level.SEVERE, e.toString(), e );
 			}
 
 
@@ -539,12 +556,12 @@ public class RequestHandler implements Runnable  {
 				proxyToClientBw.write(line);
 				proxyToClientBw.flush();
 			} catch (IOException ioe) {
-				ioe.printStackTrace();
+				LOGGER.log( Level.SEVERE, ioe.toString(), ioe );
 			}
 		} 
 		catch (Exception e){
 			System.out.println("Error on HTTPS : " + urlString );
-			e.printStackTrace();
+			  LOGGER.log( Level.SEVERE, e.toString(), e );
 		}
 	}
 
@@ -593,7 +610,7 @@ public class RequestHandler implements Runnable  {
 			}
 			catch (IOException e) {
 				System.out.println("Proxy to client HTTPS read timed out");
-				e.printStackTrace();
+				 LOGGER.log( Level.SEVERE, e.toString(), e );
 			}
 		}
 	}

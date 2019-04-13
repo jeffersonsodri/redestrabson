@@ -3,24 +3,33 @@ package redestrabson;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Data {
-	private int Tipo;
+	private int tipo;
 	private String exten;
 	private byte[] bite;
 	
-	public Data(int Tipo, byte[] bite, String exten) {
-		this.Tipo = Tipo;
+	/**
+	 * Logger, usado para exceptions
+	 */
+	
+	private static final Logger LOGGER = Logger.getLogger( Proxy.class.getName() );
+	
+	
+	public Data(int tipo, byte[] bite, String exten) {
+		this.tipo = tipo;
 		this.exten = exten;
 		this.bite = bite;
 	}
 
 	public int getTipo() {
-		return Tipo;
+		return tipo;
 	}
 
 	public void setTipo(int tipo) {
-		Tipo = tipo;
+		this.tipo = tipo;
 	}
 
 	public String getExten() {
@@ -50,7 +59,7 @@ public class Data {
             fis.close();        
             
         }catch(IOException ioExp){
-            ioExp.printStackTrace();
+        	LOGGER.log( Level.SEVERE, ioExp.toString(), ioExp );
         }
         return bArray;
     }

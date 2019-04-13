@@ -14,27 +14,12 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Scanner;
-
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MaximizeAction;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
- * The Proxy creates a Server Socket which will wait for connections on the specified port.
- * Once a connection arrives and a socket is accepted, the Proxy creates a RequestHandler object
- * on a new thread and passes the socket to it to be handled.
- * This allows the Proxy to continue accept further connections while others are being handled.
- * 
- * The Proxy class is also responsible for providing the dynamic management of the proxy through the console 
- * and is run on a separate thread in order to not interrupt the acceptance of socket connections.
- * This allows the administrator to dynamically block web sites in real time. 
- * 
- * The Proxy server is also responsible for maintaining cached copies of the any websites that are requested by
- * clients and this includes the HTML markup, images, css and js files associated with each webpage.
- * 
- * Upon closing the proxy server, the HashMaps which hold cached items and blocked sites are serialized and
- * written to a file and are loaded back in when the proxy is started once more, meaning that cached and blocked
- * sites are maintained.
- *
+ * Oi
  */
 public class Proxy implements Runnable{
 
@@ -42,14 +27,23 @@ public class Proxy implements Runnable{
 	// Main method for the program
 	public static void main(String[] args) {
 		// Create an instance of Proxy and begin listening for connections
-		int port = 80;
-		int maxSize = -1;
+		final int port;
+		final int maxSize;
 		port = Integer.parseInt(args[0]);
 		maxSize =  Integer.parseInt(args[1]);
 		Proxy myProxy = new Proxy(port,maxSize);
 		myProxy.listen();	
 	}
-
+	
+	/**
+	 * Logger, usado para exceptions
+	 */
+	
+	private static final Logger LOGGER = Logger.getLogger( Proxy.class.getName() );
+	
+	/**
+	 * Socket do servidor
+	 */
 	private ServerSocket serverSocket;
 
 	/**
@@ -64,7 +58,7 @@ public class Proxy implements Runnable{
 	 * Value: File in storage associated with this key.
 	 */
 	protected static int size; 
-	protected static LRUCache<String, Data> lru; 
+	//protected static LRUCache<String, Data> lru; 
 
 
 	/**
@@ -83,13 +77,13 @@ public class Proxy implements Runnable{
 		//Variável do tamanho da cache
 		size = maxSize;
 		//Cria uma chache
-		lru = new LRUCache<>(size);
+	//	lru = new LRUCache<>(size);
 		
 		// Create array list to hold servicing threads
 		servicingThreads = new ArrayList<>();
 
 		// Start dynamic manager on a separate thread.
-		//new Thread(this).start();	// Starts overriden run() method at bottom
+		new Thread(this).start();	// Starts overriden run() method at bottom
 		
 
 		try {
@@ -180,7 +174,7 @@ public class Proxy implements Runnable{
 			
 		}catch(Exception e) {
 			System.out.println("Exception closing proxy's server socket");
-			e.printStackTrace();
+			LOGGER.log( Level.SEVERE, e.toString(), e );
 		}
 
 	}
@@ -204,18 +198,13 @@ public class Proxy implements Runnable{
 				
 				if(command.toLowerCase().equals("cached")){
 					//Tem que aparecer a Cache Aqui
-					System.out.println("Quantidade em CHACHE " + lru.maxMemorySize + " Uhull funcionouu!!");
-					System.out.println("---Imprimindo Cahce-----------------");
-					if(lru.toString()==null) {
-						System.out.println("Cache vazia");
-					}else {
-						lru.toString();
-					}
+					//System.out.println("Quantidade em CHACHE " + lru.maxMemorySize + " Uhull funcionouu!!");
+					System.out.println("---Imprimindo Cache-----------------");
+				RequestHandler.lru.snapshot();
+					
 					
 					System.out.println("------------------------------------");
 				}
-
-
 				else if(command.equals("close")){
 					running = false;
 					closeServer();
