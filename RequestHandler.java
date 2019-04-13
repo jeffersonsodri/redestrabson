@@ -1,4 +1,4 @@
-package redes;
+package redestrabson;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
