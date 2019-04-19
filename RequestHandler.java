@@ -178,13 +178,6 @@ public class RequestHandler implements Runnable  {
 			
 		//	System.out.println("Data " +lru.get(urlString));
 			Data data2 = lru.get(urlString);
-			System.out.println("O tipo é " + data2.getTipo());
-			
-			System.out.println("A extençao é " + data2.getExten());
-			
-			// Da nulo por algum motivo desconhecido
-			System.out.println("O nome é " + data2.getNome());
-			//data2.getTipo();	
 			File file = new File(data2.getNome());
 			file.createNewFile();		
 			
@@ -192,7 +185,7 @@ public class RequestHandler implements Runnable  {
 			
 			if(data2.getTipo()==0){
 				FileOutputStream fos = new FileOutputStream(file);
-				fos.write(data.getBite());
+				fos.write(data2.getBite());
 				// Read in image from storage
 				BufferedImage image = ImageIO.read(file);
 				
@@ -217,7 +210,7 @@ public class RequestHandler implements Runnable  {
 			// Standard text based file requested
 			}else {
 				FileOutputStream fos2 = new FileOutputStream(file);
-				fos2.write(data.getBite());
+				fos2.write(data2.getBite());
 				BufferedReader cachedFileBufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
 
 				response = "HTTP/1.0 200 OK\n" +
@@ -442,9 +435,9 @@ public class RequestHandler implements Runnable  {
 				// Ensure data written and add to our cached hash maps
 				fileBW.flush();
 				bite = Data.readFileToByteArray(file);
-				System.out.println("O nome dela é "+fileName);
 	            Data data = new	Data(tipo,bite,fileExtension,fileName);
 				lru.put(urlString, data);
+				//System.out.println("O nome é "+data.getNome());
 				//System.out.println("Cache é "+Proxy.lru.toString());
 			}
 

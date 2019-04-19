@@ -23,6 +23,7 @@ public class Data {
 		this.tipo = tipo;
 		this.exten = exten;
 		this.bite = bite;
+		this.nome = nome;
 	}
 
 	public String getNome() {
