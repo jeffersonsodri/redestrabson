@@ -50,7 +50,7 @@ public class RequestHandler implements Runnable  {
 	/**
 	 * Data onde armazena as infomações do arquivo
 	 */
-	Data data;
+	static Data data;
 	/**
 	 * Read data client sends to proxy
 	 */
@@ -168,7 +168,6 @@ public class RequestHandler implements Runnable  {
 			//String fileExtension = cachedFile.getName().substring(cachedFile.getName().lastIndexOf('.'));
 			
 			// Response that will be sent to the server
-			File file=null;
 			String response;
 			//lru.get(urlString);
 			
@@ -177,11 +176,21 @@ public class RequestHandler implements Runnable  {
 			 */
 			//System.out.println("URL Dentro da CHACHE "+  urlString.toUpperCase() );
 			
-			System.out.println("");
-			lru.get(urlString);
-			data.getTipo();
-
-			if(data.getTipo()==0){
+		//	System.out.println("Data " +lru.get(urlString));
+			Data data2 = lru.get(urlString);
+			System.out.println("O tipo é " + data2.getTipo());
+			
+			System.out.println("A extençao é " + data2.getExten());
+			
+			// Da nulo por algum motivo desconhecido
+			System.out.println("O nome é " + data2.getNome());
+			//data2.getTipo();	
+			File file = new File(data2.getNome());
+			file.createNewFile();		
+			
+			
+			
+			if(data2.getTipo()==0){
 				FileOutputStream fos = new FileOutputStream(file);
 				fos.write(data.getBite());
 				// Read in image from storage
@@ -358,7 +367,7 @@ public class RequestHandler implements Runnable  {
 					// Ensure data written and add to our cached hash maps
 					fileBW.flush();
 					bite = Data.readFileToByteArray(file);
-		            Data data = new	Data(tipo,bite,fileExtension);
+		            Data data = new	Data(tipo,bite,fileExtension,fileName);
 					lru.put(urlString, data);
 					
 					// Send response code to client
@@ -433,7 +442,8 @@ public class RequestHandler implements Runnable  {
 				// Ensure data written and add to our cached hash maps
 				fileBW.flush();
 				bite = Data.readFileToByteArray(file);
-	            Data data = new	Data(tipo,bite,fileExtension);
+				System.out.println("O nome dela é "+fileName);
+	            Data data = new	Data(tipo,bite,fileExtension,fileName);
 				lru.put(urlString, data);
 				//System.out.println("Cache é "+Proxy.lru.toString());
 			}

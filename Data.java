@@ -10,18 +10,27 @@ public class Data {
 	private int tipo;
 	private String exten;
 	private byte[] bite;
+	private String nome;
 	
 	/**
 	 * Logger, usado para exceptions
 	 */
 	
-	private static final Logger LOGGER = Logger.getLogger( Proxy.class.getName() );
+	private static final Logger LOGGER = Logger.getLogger( Data.class.getName() );
 	
 	
-	public Data(int tipo, byte[] bite, String exten) {
+	public Data(int tipo, byte[] bite, String exten, String nome) {
 		this.tipo = tipo;
 		this.exten = exten;
 		this.bite = bite;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
 	}
 
 	public int getTipo() {

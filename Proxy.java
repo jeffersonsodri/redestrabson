@@ -198,9 +198,9 @@ public class Proxy implements Runnable{
 				
 				if(command.toLowerCase().equals("cached")){
 					//Tem que aparecer a Cache Aqui
-					//System.out.println("Quantidade em CHACHE " + lru.maxMemorySize + " Uhull funcionouu!!");
+					System.out.println("Quantidade em CHACHE " + RequestHandler.lru.maxMemorySize + " Uhull funcionouu!!");
 					System.out.println("---Imprimindo Cache-----------------");
-				RequestHandler.lru.snapshot();
+					System.out.println(RequestHandler.lru.snapshot());
 					
 					
 					System.out.println("------------------------------------");
