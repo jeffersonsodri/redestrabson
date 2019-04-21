@@ -4,13 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
-/*
- * A memory cache implementation which uses a LRU policy.
- * <p>
- * This implementation is thread safe.
- *
- * @author Shintaro Katafuchi
- */
+
 public class LRUCache<K, V> implements Cache<K, V> {
 
     /**

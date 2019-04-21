@@ -1,11 +1,5 @@
 package redestrabson;
-/*
- * 	Student:		Stefano Lupo
- *  Student No:		14334933
- *  Degree:			JS Computer Engineering
- *  Course: 		3D3 Computer Networks
- *  Date:			02/04/2017
- */
+
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -185,7 +179,6 @@ public class Proxy implements Runnable{
 		 * Creates a management interface which can dynamically update the proxy configurations
 		 *  	cached	: Lists currently cached sites
 		 *  	close	: Closes the proxy server
-		 *  	*		: Adds * to the list of blocked sites
 		 */
 		@Override
 		public void run() {
@@ -198,7 +191,7 @@ public class Proxy implements Runnable{
 				
 				if(command.toLowerCase().equals("cached")){
 					//Tem que aparecer a Cache Aqui
-					System.out.println("Quantidade em CHACHE " + RequestHandler.lru.maxMemorySize + " Uhull funcionouu!!");
+					
 					System.out.println("---Imprimindo Cache-----------------");
 					System.out.println(RequestHandler.lru.snapshot());
 					
